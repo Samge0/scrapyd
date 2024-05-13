@@ -8,6 +8,9 @@ from twisted.python import log
 from scrapyd.jobstorage import job_items_url, job_log_url
 from scrapyd.utils import JsonResource, UtilsCache, get_spider_list, native_stringify_dict
 
+import os
+import signal
+
 
 class WsResource(JsonResource):
 
@@ -69,7 +72,7 @@ class Cancel(WsResource):
         args = {k: v[0] for k, v in native_stringify_dict(copy(txrequest.args), keys_only=False).items()}
         project = args['project']
         jobid = args['job']
-        signal = args.get('signal', 'TERM')
+        _signal = args.get('signal', 'TERM')
         prevstate = None
         queue = self.root.poller.queues[project]
         c = queue.remove(lambda x: x["_job"] == jobid)
@@ -78,8 +81,17 @@ class Cancel(WsResource):
         spiders = self.root.launcher.processes.values()
         for s in spiders:
             if s.project == project and s.job == jobid:
-                s.transport.signalProcess(signal)
+                s.transport.signalProcess(_signal)
                 prevstate = "running"
+
+        job_pid = args.get('pid')
+        if job_pid:
+            try:
+                os.kill(int(job_pid), signal.SIGKILL)
+                log.msg(f"Process {job_pid} has been terminated.")
+            except Exception as e:
+                log.msg(f"Unable to terminate process {job_pid}:{e}")
+
         return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
 
 

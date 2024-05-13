@@ -9,11 +9,11 @@ with open(os.path.join(os.path.dirname(__file__), 'scrapyd', 'VERSION')) as f:
     version = f.read().strip()
 
 setup(
-    name='scrapyd',
+    name='samge-fork-scrapyd',
     version=version,
-    author='Scrapy developers',
-    author_email='info@scrapy.org',
-    url='https://github.com/scrapy/scrapyd',
+    author='samge',
+    author_email='samgeapp@gmail.com',
+    url='https://github.com/Samge0/scrapyd',
     description='A service for running Scrapy spiders, with an HTTP API',
     license='BSD',
     packages=['scrapyd'],
